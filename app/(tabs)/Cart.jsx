@@ -1,7 +1,8 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import products from "../data/product";
 
 export default function Cart() {
-  const products = localStorage.getItem("cart") ? JSON.parse(localStorage.getItem("cart")) : null;
+  const products = products
 
   if (products && products.length > 0) {
     return (
