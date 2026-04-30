@@ -20,34 +20,33 @@ export default function Profile() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>My Account</Text>
 
-      {/* HEADER CARD */}
+      {/* Profile Card */}
       <View style={styles.profileCard}>
         <Image
           source={{ uri: "https://i.pravatar.cc/150" }}
           style={styles.avatar}
         />
-
         <View>
           <Text style={styles.name}>{user.name}</Text>
-          <Text style={styles.email}>{user.email}</Text>
+          <Text>{user.email}</Text>
           <Text style={styles.muted}>
             Member since {user.memberSince}
           </Text>
         </View>
       </View>
 
-      {/* BALANCE */}
+      {/* Balance */}
       <View style={styles.balanceCard}>
-        <Text style={styles.sectionTitle}>Wallet Balance</Text>
+        <Text>Wallet Balance</Text>
         <Text style={styles.balance}>
           ${user.balance.toFixed(2)}
         </Text>
       </View>
 
-      {/* STATS */}
+      {/* Stats */}
       <View style={styles.stats}>
         <View style={styles.statBox}>
           <Text style={styles.statNumber}>{user.orders}</Text>
@@ -60,32 +59,36 @@ export default function Profile() {
         </View>
       </View>
 
-      {/* ADDRESS */}
+      {/* Address */}
       <View style={styles.infoCard}>
-        <Text style={styles.sectionTitle}>📍 Shipping Address</Text>
+        <Text>📍 Shipping Address</Text>
         <Text>{user.address}</Text>
       </View>
 
-      {/* ACTIONS */}
+      {/* Actions */}
       <View style={styles.actions}>
-        <Button label="Edit Profile" />
-        <Button label="My Orders" />
-        <Button label="Payment Methods" />
-        <Button label="Logout" danger />
+        <AppButton label="Edit Profile" />
+        <AppButton label="My Orders" />
+        <AppButton label="Payment Methods" />
+        <AppButton label="Logout" danger />
       </View>
     </ScrollView>
   );
 }
 
 /* Reusable Button */
-function Button({ label, danger }: { label: string; danger?: boolean }) {
+function AppButton({
+  label,
+  danger,
+}: {
+  label: string;
+  danger?: boolean;
+}) {
   return (
     <TouchableOpacity
-      style={[styles.button, danger && styles.logoutButton]}
+      style={[styles.button, danger && styles.logout]}
     >
-      <Text style={[styles.buttonText, danger && styles.logoutText]}>
-        {label}
-      </Text>
+      <Text style={styles.buttonText}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -93,99 +96,88 @@ function Button({ label, danger }: { label: string; danger?: boolean }) {
 /* Styles */
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-    padding: 15,
+    maxWidth: 720, // works but mostly ignored on mobile
+    alignSelf: "center",
+    padding: 25,
+    backgroundColor: "#fafafa",
+    flexGrow: 1,
   },
   title: {
+    marginBottom: 20,
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 15,
   },
   profileCard: {
     flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#fff",
     padding: 15,
     borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 10,
     elevation: 3,
   },
   avatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    marginRight: 15,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginRight: 15, // replaces gap
   },
   name: {
     fontSize: 18,
     fontWeight: "bold",
   },
-  email: {
-    color: "#555",
-  },
   muted: {
-    color: "#888",
     fontSize: 12,
+    color: "gray",
   },
   balanceCard: {
-    backgroundColor: "#fff",
+    marginTop: 15,
+    backgroundColor: "#e8fff0",
     padding: 15,
     borderRadius: 12,
-    marginBottom: 15,
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    marginBottom: 5,
   },
   balance: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
   },
   stats: {
     flexDirection: "row",
+    marginTop: 15,
     justifyContent: "space-between",
-    marginBottom: 15,
   },
   statBox: {
     flex: 1,
     backgroundColor: "#fff",
-    marginHorizontal: 5,
     padding: 15,
-    borderRadius: 12,
     alignItems: "center",
+    borderRadius: 12,
     elevation: 3,
+    marginHorizontal: 5, // replaces gap
   },
   statNumber: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
   },
   infoCard: {
+    marginTop: 15,
     backgroundColor: "#fff",
     padding: 15,
     borderRadius: 12,
-    marginBottom: 15,
-    elevation: 3,
   },
   actions: {
-    marginBottom: 30,
+    marginTop: 20,
   },
   button: {
-    backgroundColor: "#007bff",
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 8,
+    backgroundColor: "black",
     marginBottom: 10,
     alignItems: "center",
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "bold",
   },
-  logoutButton: {
-    backgroundColor: "#ff3b30",
-  },
-  logoutText: {
-    color: "#fff",
+  logout: {
+    backgroundColor: "red",
   },
 });

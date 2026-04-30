@@ -35,7 +35,7 @@ export default function ProductsScreen() {
 
       <FlatList
         data={products}
-        keyExtractor={(item: Product) => item.id.toString()}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
       />
     </View>
