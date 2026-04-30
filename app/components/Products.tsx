@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import products from "../data/products"; 
+import products from "../data/product"; 
 
 type Product = {
   id: number;
