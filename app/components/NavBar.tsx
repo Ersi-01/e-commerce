@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -7,119 +7,142 @@ import {
   StyleSheet,
 } from "react-native";
 import { ShoppingCart, User, Menu, X, Search } from "lucide-react-native";
+import React from "react";
 
-export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const cartCount = 3;
+export default function NavbarAlt() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const cartItems = 2;
 
   return (
-    <View style={styles.navbar}>
-      {/* Top Row */}
-      <View style={styles.topRow}>
-        {/* Logo */}
-        <Text style={styles.logo}>ShopLogo</Text>
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.logo}>MyShop</Text>
 
-        {/* Icons */}
-        <View style={styles.icons}>
+        <View style={styles.actions}>
           {/* Cart */}
-          <View style={styles.cartContainer}>
-            <ShoppingCart color="black" size={22} />
-            {cartCount > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{cartCount}</Text>
+          <View style={styles.iconWrapper}>
+            <ShoppingCart size={22} color="#222" />
+            {cartItems > 0 && (
+              <View style={styles.counter}>
+                <Text style={styles.counterText}>{cartItems}</Text>
               </View>
             )}
           </View>
 
           {/* User */}
-          <User color="black" size={22} />
+          <TouchableOpacity style={styles.iconSpacing}>
+            <User size={22} color="#222" />
+          </TouchableOpacity>
 
-          {/* Menu Toggle */}
-          <TouchableOpacity onPress={() => setIsOpen(!isOpen)}>
-            {isOpen ? (
-              <X color="black" size={24} />
+          {/* Menu Button */}
+          <TouchableOpacity onPress={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? (
+              <X size={24} color="#222" />
             ) : (
-              <Menu color="black" size={24} />
+              <Menu size={24} color="#222" />
             )}
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Search */}
-      <View style={styles.searchContainer}>
-        <Search size={18} color="gray" />
+      {/* Search Bar */}
+      <View style={styles.searchBox}>
+        <Search size={18} color="#888" />
         <TextInput
-          placeholder="Search products..."
-          style={styles.input}
+          placeholder="Search items..."
+          style={styles.searchInput}
         />
       </View>
 
-      {/* Mobile Menu */}
-      {isOpen && (
-        <View style={styles.menu}>
-          <Text style={styles.menuItem}>Home</Text>
-          <Text style={styles.menuItem}>Shop</Text>
-          <Text style={styles.menuItem}>Categories</Text>
-          <Text style={styles.menuItem}>Deals</Text>
+      {/* Dropdown Menu */}
+      {menuOpen && (
+        <View style={styles.dropdown}>
+          <NavItem label="Home" />
+          <NavItem label="Products" />
+          <NavItem label="Categories" />
+          <NavItem label="Offers" />
         </View>
       )}
     </View>
   );
 }
 
+/* Reusable Menu Item */
+function NavItem({ label }: { label: string }) {
+  return (
+    <TouchableOpacity style={styles.navItem}>
+      <Text style={styles.navText}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+/* Styles */
 const styles = StyleSheet.create({
-  navbar: {
+  container: {
     backgroundColor: "#fff",
-    padding: 10,
-    elevation: 4,
+    padding: 12,
+    elevation: 5,
   },
-  topRow: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   logo: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 22,
+    fontWeight: "700",
   },
-  icons: {
+  actions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 15,
   },
-  cartContainer: {
+  iconWrapper: {
     position: "relative",
+    marginRight: 15,
   },
-  badge: {
+  iconSpacing: {
+    marginRight: 15,
+  },
+  counter: {
     position: "absolute",
-    top: -5,
-    right: -8,
-    backgroundColor: "red",
+    top: -6,
+    right: -10,
+    backgroundColor: "#ff3b30",
     borderRadius: 10,
     paddingHorizontal: 5,
+    paddingVertical: 1,
   },
-  badgeText: {
+  counterText: {
     color: "#fff",
     fontSize: 10,
+    fontWeight: "bold",
   },
-  searchContainer: {
+  searchBox: {
     flexDirection: "row",
     alignItems: "center",
+    marginTop: 10,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    marginTop: 10,
-    paddingHorizontal: 8,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    paddingHorizontal: 10,
   },
-  input: {
-    marginLeft: 5,
+  searchInput: {
+    marginLeft: 8,
     flex: 1,
+    height: 40,
   },
-  menu: {
+  dropdown: {
     marginTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+    paddingTop: 10,
   },
-  menuItem: {
-    paddingVertical: 8,
-    color: "#444",
+  navItem: {
+    paddingVertical: 10,
+  },
+  navText: {
+    fontSize: 16,
+    color: "#333",
   },
 });
