@@ -13,7 +13,7 @@ type Product = {
   description: string;
 };
 
-export default function ProductsScreen() {
+export default function ProductsScreen() {  
   const renderItem = ({ item }: { item: Product }) => (
     <View>
       <Text>{item.name}</Text>
