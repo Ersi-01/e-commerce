@@ -1,95 +1,82 @@
 import React, { useState, useMemo } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  FlatList,
-} from "react-native";
-import { Menu, X } from "lucide-react-native";
-import products from "../data/products";
-
-const categories = [
-  "All",
-  "Hoodies",
-  "Pants",
-  "T-Shirts",
-  "Jackets",
-  "Jeans",
-  "Shorts",
-  "Shirts",
-  "Tops",
-  "Sweaters",
-  "Sweatshirts",
-];
+import { View, Text, FlatList, StyleSheet } from "react-native";
+import products from "./app/data/products.js";
+import Filter, { FilterOptions } from "./Filter";
 
 export default function Catalogue() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [filters, setFilters] = useState<FilterOptions>({
+    category: "All",
+    sortBy: null,
+    inStockOnly: false,
+  });
 
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === "All") {
-      return products;
-    }
-    return products.filter(
-      (product: any) => product.category === selectedCategory,
-    );
-  }, [selectedCategory]);
+    let result = [...products];
 
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category);
-    setSidebarOpen(false);
-  };
+    if (filters.category !== "All")
+      result = result.filter((p) => p.category === filters.category);
 
-  const renderProduct = ({ item }: { item: (typeof products)[0] }) => (
-    <View>
-      <Text>{item.name}</Text>
-      <Text>${item.price}</Text>
-      <Text>{item.category}</Text>
-      <Text>{item.inStock ? `In Stock (${item.stock})` : "Out of Stock"}</Text>
-    </View>
-  );
+    if (filters.inStockOnly)
+      result = result.filter((p) => p.inStock);
+
+    if (filters.sortBy === "price_asc")
+      result.sort((a, b) => a.price - b.price);
+    else if (filters.sortBy === "price_desc")
+      result.sort((a, b) => b.price - a.price);
+
+    return result;
+  }, [filters]);
 
   return (
-    <View>
-      <View>
-        <TouchableOpacity onPress={() => setSidebarOpen(true)}>
-          <Menu size={24} color="white" />
-        </TouchableOpacity>
-        <Text>Catalogue</Text>
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Catalogue</Text>
+        <Filter onFilterChange={setFilters} />
       </View>
 
-      {sidebarOpen && (
-        <View>
-          <TouchableOpacity onPress={() => setSidebarOpen(false)}>
-            <Text>Close Categories</Text>
-          </TouchableOpacity>
-          <ScrollView>
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category}
-                onPress={() => handleCategorySelect(category)}
-              >
-                <Text>{category}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      )}
+      <Text style={styles.count}>{filteredProducts.length} produkte</Text>
 
-      <View>
-        <Text>{selectedCategory} Products</Text>
-        <FlatList
-          data={filteredProducts}
-          renderItem={renderProduct}
-          keyExtractor={(item) => item.id.toString()}
-          ListEmptyComponent={
-            <View>
-              <Text>No products found in {selectedCategory}</Text>
-            </View>
-          }
-        />
-      </View>
+      <FlatList
+        data={filteredProducts}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.category}>{item.category}</Text>
+            <Text style={styles.price}>${item.price}</Text>
+            <Text style={styles.rating}>⭐ {item.rating}</Text>
+            <Text style={item.inStock ? styles.inStock : styles.outOfStock}>
+              {item.inStock ? `In Stock (${item.stock})` : "Out of Stock"}
+            </Text>
+          </View>
+        )}
+        ListEmptyComponent={
+          <Text style={styles.empty}>Nuk u gjet asnjë produkt.</Text>
+        }
+      />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#0a0a0f", padding: 16 },
+  header: {
+    flexDirection: "row", justifyContent: "space-between",
+    alignItems: "center", marginBottom: 8,
+  },
+  title: { color: "#fff", fontSize: 22, fontWeight: "700" },
+  count: { color: "#666", fontSize: 12, marginBottom: 12 },
+  card: {
+    backgroundColor: "#13131a", borderRadius: 12,
+    padding: 14, marginBottom: 10,
+    borderWidth: 1, borderColor: "#2a2a3a",
+  },
+  name: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  category: { color: "#888", fontSize: 12, marginTop: 2 },
+  price: { color: "#f0c060", fontSize: 15, fontWeight: "700", marginTop: 6 },
+  rating: { color: "#ccc", fontSize: 13, marginTop: 2 },
+  inStock: { color: "#4caf50", fontSize: 12, marginTop: 4 },
+  outOfStock: { color: "#f44336", fontSize: 12, marginTop: 4 },
+  empty: { color: "#666", textAlign: "center", marginTop: 40 },
+});
