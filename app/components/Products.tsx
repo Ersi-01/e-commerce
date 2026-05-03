@@ -26,6 +26,10 @@ export default function ProductsScreen() {
       <TouchableOpacity disabled={!item.inStock}>
         <Text>{item.inStock ? "Add to Cart" : "Unavailable"}</Text>
       </TouchableOpacity>
+
+    <TouchableOpacity onPress={() => addToWishlist(item)}>
+    <Text>Add to Wishlist ❤️</Text>
+    </TouchableOpacity>
     </View>
   );
 
