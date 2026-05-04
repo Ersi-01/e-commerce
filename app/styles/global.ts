@@ -43,22 +43,26 @@
 import { StyleSheet } from "react-native";
 
 export const Colors = {
-  bg:           "#0a0a0f",
-  card:         "#13131a",
-  input:        "#1a1a24",
-  border:       "#2a2a3a",
-  textPrimary:  "#ffffff",
-  textSecondary:"#aaaaaa",
-  textMuted:    "#666666",
-  textDim:      "#888888",
-  accent:       "#f0c060",
-  accentDark:   "#0a0a0f",
-  success:      "#4caf50",
-  danger:       "#f44336",
-  dangerBg:     "#ff444422",
-  dangerBorder: "#ff4444",
-  blobGold:     "#f0c06022",
-  blobBlue:     "#6060f022",
+  bg:           "#0d0f14",   // smoother dark (less harsh than pure black)
+  card:         "#161a23",   // more depth
+  input:        "#1d2230",   // clearer separation from card
+  border:       "#2f3545",   // subtle but visible
+
+  textPrimary:  "#f5f7ff",   // softer white (less eye strain)
+  textSecondary:"#b6bdd1",   // cleaner gray-blue
+  textMuted:    "#7c8499",
+  textDim:      "#9aa3b2",
+
+  accent:       "#7c5cff",   // modern purple accent (way more premium)
+  accentDark:   "#0d0f14",   // matches bg for contrast
+
+  success:      "#22c55e",   // nicer green
+  danger:       "#ef4444",   // modern red
+  dangerBg:     "#ef444422",
+  dangerBorder: "#ef4444",
+
+  blobGold:     "#7c5cff22", // now matches accent instead of random gold
+  blobBlue:     "#3b82f622", // cleaner blue
 };
 
 export const Spacing = {
