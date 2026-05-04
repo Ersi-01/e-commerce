@@ -81,12 +81,12 @@ export default function Checkout({ navigation }: Props) {
 		<Text style={S.sectionTitle}>Order Summary</Text>
 		<View style={S.card}>
 			{cart.map((product: Product) => (
-			<View key={product.id} style={[S.rowBetween, { paddingVertical: Spacing.xs }]}>
-				<Text style={{ color: Colors.textPrimary, fontSize: Typography.md, flex: 1 }}>
-				{product.name}
-				</Text>
-				<Text style={S.price}>${product.price.toFixed(2)}</Text>
-			</View>
+				<View key={product.id} style={[S.rowBetween, { paddingVertical: Spacing.xs }]}>
+					<Text style={{ color: Colors.textPrimary, fontSize: Typography.md, flex: 1 }}>
+					{product.name}
+					</Text>
+					<Text style={S.price}>${product.price.toFixed(2)}</Text>
+				</View>
 			))}
 
 			<View style={{ height: 1, backgroundColor: Colors.border, marginVertical: Spacing.sm }} />
