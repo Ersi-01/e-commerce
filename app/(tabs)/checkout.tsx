@@ -4,21 +4,21 @@ import { getCart, saveCart } from "../storage/cartStorage";
 import S, { Colors, Spacing, Typography, Radius } from "@/app/styles/global";
 
 type Product = {
-  id: string;
-  name: string;
-  price: number;
+	id: string;
+	name: string;
+	price: number;
 };
 
 type Props = {
-  navigation: {
-	navigate: (screen: string) => void;
-  };
+	navigation: {
+		navigate: (screen: string) => void;
+	};
 };
 
 type ShippingForm = {
-  name: string;
-  address: string;
-  city: string;
+	name: string;
+	address: string;
+	city: string;
 };
 
 export default function Checkout({ navigation }: Props) {
