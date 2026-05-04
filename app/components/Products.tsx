@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import products from "../data/products";
+// import products from "./data/products";
+import { useWishlist } from "../context/WishlistContext";
 
 type Product = {
   id: number;
@@ -14,6 +15,7 @@ type Product = {
 };
 
 export default function ProductsScreen() {
+  const { addToWishlist, isInWishlist } = useWishlist();
   const renderItem = ({ item }: { item: Product }) => (
     <View>
       <Text>{item.name}</Text>
@@ -27,8 +29,10 @@ export default function ProductsScreen() {
         <Text>{item.inStock ? "Add to Cart" : "Unavailable"}</Text>
       </TouchableOpacity>
 
-    <TouchableOpacity onPress={() => addToWishlist(item)}>
-    <Text>Add to Wishlist ❤️</Text>
+    <TouchableOpacity onPress={() => addToWishlist(item)} disabled={isInWishlist(item.id)}>
+    <Text>
+          {isInWishlist(item.id) ? "In Wishlist ❤️" : "Add to Wishlist ❤️"}
+        </Text>
     </TouchableOpacity>
     </View>
   );
@@ -37,11 +41,11 @@ export default function ProductsScreen() {
     <View>
       <Text>Products</Text>
 
-      <FlatList
+      {/* <FlatList
         data={products}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
-      />
+      /> */}
     </View>
   );
 }
