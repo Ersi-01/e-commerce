@@ -1,7 +1,7 @@
-import React from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
-// import products from "./data/products";
+import products from "../data/products";
 import { useWishlist } from "../context/WishlistContext";
+import S from "@/app/styles/global";
 
 type Product = {
   id: number;
@@ -16,36 +16,48 @@ type Product = {
 
 export default function ProductsScreen() {
   const { addToWishlist, isInWishlist } = useWishlist();
-  const renderItem = ({ item }: { item: Product }) => (
-    <View>
-      <Text>{item.name}</Text>
-      <Text>{item.category}</Text>
-      <Text>{item.description}</Text>
-      <Text>${item.price}</Text>
-      <Text>⭐ {item.rating}</Text>
-      <Text>{item.inStock ? `In Stock: ${item.stock}` : "Out of Stock"}</Text>
 
-      <TouchableOpacity disabled={!item.inStock}>
-        <Text>{item.inStock ? "Add to Cart" : "Unavailable"}</Text>
+  const renderItem = ({ item }: { item: Product }) => (
+    <View style={S.card}>
+      <Text style={S.subheading}>{item.name}</Text>
+      <Text style={S.label}>{item.category}</Text>
+      <Text style={S.body}>{item.description}</Text>
+      <Text style={S.price}>${item.price}</Text>
+      <Text style={S.rating}>⭐ {item.rating}</Text>
+      <Text style={item.inStock ? S.inStock : S.outOfStock}>
+        {item.inStock ? `In Stock: ${item.stock}` : "Out of Stock"}
+      </Text>
+
+      <TouchableOpacity
+        style={[S.btnSecondary, !item.inStock && S.btnDisabled]}
+        disabled={!item.inStock}
+      >
+        <Text style={S.btnSecondaryText}>
+          {item.inStock ? "Add to Cart" : "Unavailable"}
+        </Text>
       </TouchableOpacity>
 
-    <TouchableOpacity onPress={() => addToWishlist(item)} disabled={isInWishlist(item.id)}>
-    <Text>
-          {isInWishlist(item.id) ? "In Wishlist ❤️" : "Add to Wishlist ❤️"}
+      <TouchableOpacity
+        style={[S.btnChip, isInWishlist(item.id) && S.btnDisabled]}
+        onPress={() => addToWishlist(item)}
+        disabled={isInWishlist(item.id)}
+      >
+        <Text style={S.btnChipText}>
+          {isInWishlist(item.id) ? "In Wishlist" : "Add to Wishlist"}
         </Text>
-    </TouchableOpacity>
+      </TouchableOpacity>
     </View>
   );
 
   return (
-    <View>
-      <Text>Products</Text>
+    <View style={S.screen}>
+      <Text style={S.heading}>Products</Text>
 
-      {/* <FlatList
+      <FlatList
         data={products}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item: { id: number }) => item.id.toString()}
         renderItem={renderItem}
-      /> */}
+      />
     </View>
   );
 }
