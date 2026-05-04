@@ -85,22 +85,51 @@ export default function Navbar({ search, setSearch }: Props) {
       <Searchbar search={search} setSearch={setSearch} />
 
       {/* DROPDOWN MENU */}
-      {isOpen && (
-        <View style={{ marginTop: Spacing.sm }}>
-          <Text style={[S.body, { paddingVertical: Spacing.sm }]}>
-            Home
-          </Text>
-          <Text style={[S.body, { paddingVertical: Spacing.sm }]}>
-            Shop
-          </Text>
-          <Text style={[S.body, { paddingVertical: Spacing.sm }]}>
-            Categories
-          </Text>
-          <Text style={[S.body, { paddingVertical: Spacing.sm }]}>
-            Deals
-          </Text>
-        </View>
-      )}
+{isOpen && (
+  <View style={{ marginTop: Spacing.sm }}>
+    
+    <Text
+      onPress={() => {
+        setIsOpen(true);
+        router.push("/(tabs)/Products");
+      }}
+      style={[S.body, { paddingVertical: Spacing.sm }]}
+    >
+      Products
+    </Text>
+
+    <Text
+      onPress={() => {
+        setIsOpen(true);
+        router.push("/catalogue");
+      }}
+      style={[S.body, { paddingVertical: Spacing.sm }]}
+    >
+      Catalogue
+    </Text>
+
+    <Text
+      onPress={() => {
+        setIsOpen(true);
+        router.push("/wishlist");
+      }}
+      style={[S.body, { paddingVertical: Spacing.sm }]}
+    >
+      Wishlist
+    </Text>
+
+    <Text
+      onPress={() => {
+        setIsOpen(true);
+        router.push("/(tabs)/Profile");
+      }}
+      style={[S.body, { paddingVertical: Spacing.sm }]}
+    >
+      Profile
+    </Text>
+
+  </View>
+)}
     </View>
   );
 }
