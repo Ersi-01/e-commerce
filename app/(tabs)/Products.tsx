@@ -1,9 +1,10 @@
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Animated } from "react-native";
 import { router } from "expo-router";
 import products from "../data/products";
 import { useWishlist } from "../context/WishlistContext";
 import { addToCart } from "../storage/cartStorage";
 import S from "@/app/styles/global";
+import { useRef, useState } from "react";
 
 type Product = {
   id: number;
@@ -18,6 +19,17 @@ type Product = {
 
 export default function ProductsScreen() {
   const { addToWishlist, isInWishlist } = useWishlist();
+  const [toastMessage, setToastMessage] = useState("");
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  function showToast(message: string) {
+    setToastMessage(message);
+    Animated.sequence([
+      Animated.timing(opacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+      Animated.delay(1500),
+      Animated.timing(opacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start();
+  }
 
   const renderItem = ({ item }: { item: Product }) => (
     <TouchableOpacity onPress={() => router.push({ pathname: "/productdetails", params: { id: item.id } })}>
@@ -34,7 +46,7 @@ export default function ProductsScreen() {
         <TouchableOpacity
           style={[S.btnSecondary, !item.inStock && S.btnDisabled]}
           disabled={!item.inStock}
-          onPress={(e) => { e.stopPropagation(); addToCart(item); }}
+          onPress={(e) => { e.stopPropagation(); addToCart(item); showToast(`${item.name} added to cart!`); }}
         >
           <Text style={S.btnSecondaryText}>
             {item.inStock ? "Add to Cart" : "Unavailable"}
@@ -62,6 +74,18 @@ export default function ProductsScreen() {
         keyExtractor={(item: { id: number }) => item.id.toString()}
         renderItem={renderItem}
       />
+      <Animated.View style={{
+        opacity,
+        position: "absolute",
+        bottom: 30,
+        alignSelf: "center",
+        backgroundColor: "#333",
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 24,
+      }}>
+        <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>{toastMessage}</Text>
+      </Animated.View>
     </View>
   );
 }
