@@ -3,12 +3,10 @@ import {
   CreditCard,
   Heart,
   LogOut,
-  MapPin,
   PackageCheck,
   Settings,
   ShoppingBag,
   Star,
-  Wallet,
 } from "lucide-react-native"
 import React, { useEffect, useMemo, useState } from "react"
 import {
@@ -22,16 +20,14 @@ import {
   View,
 } from "react-native"
 import { useRouter } from "expo-router"
-import { supabase } from "../utils/supabase"
-import Navbar from "@/app/components/Navbar"
 import { useWishlist } from "../context/WishlistContext"
 import { useTheme } from "../context/ThemeContext"
 import S, { Colors, Radius, Spacing, Typography, getColors } from "@/app/styles/global"
 import storage from "@/app/utils/storage"
 
 export default function Profile() {
-  const { isDark } = useTheme();
-  const Colors = getColors(isDark); 
+  const { isDark } = useTheme()
+  const Colors = getColors(isDark)
   const router = useRouter()
   const { wishlist } = useWishlist()
 
@@ -48,28 +44,28 @@ export default function Profile() {
   }, [])
 
   const loadProfile = async () => {
-  try {
-    const { data } = await supabase.auth.getUser();
-    if (data.user) {
-      setEmail(data.user.email ?? '');
-      setName(data.user.user_metadata?.name ?? '');
-    }
+    try {
+      const savedEmail = await storage.get("@user_email")
+      const savedName = await storage.get("@user_name")
 
-    const savedBalance = await storage.get("@user_balance");
-    if (savedBalance) {
-      setBalance(Number(savedBalance));
-    } else {
-      await storage.set("@user_balance", "0");
-    }
+      if (savedEmail) setEmail(savedEmail)
+      if (savedName) setName(savedName)
 
-    const savedOrders = await storage.get("@user_orders");
-    if (savedOrders) {
-      setOrders(JSON.parse(savedOrders));
+      const savedBalance = await storage.get("@user_balance")
+      if (savedBalance) {
+        setBalance(Number(savedBalance))
+      } else {
+        await storage.set("@user_balance", "0")
+      }
+
+      const savedOrders = await storage.get("@user_orders")
+      if (savedOrders) {
+        setOrders(JSON.parse(savedOrders))
+      }
+    } catch (err) {
+      console.log(err)
     }
-  } catch (err) {
-    console.log(err);
   }
-};
 
   const displayName = useMemo(() => {
     if (name) return name
@@ -111,20 +107,16 @@ export default function Profile() {
   }
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.replace('/login' as any);
+  await storage.remove("@user_email");
+  await storage.remove("@user_name");
+  await storage.remove("@user_balance");
+  await storage.remove("@user_orders");
+
+  router.replace("/login" as any);
 };
 
   return (
-    <View
-      style={[
-        S.screenNoPad,
-        {
-          backgroundColor: Colors.bg,
-          flex: 1,
-        },
-      ]}
-    >
+    <View style={[S.screenNoPad, { backgroundColor: Colors.bg, flex: 1 }]}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.bg} />
 
       <ScrollView
@@ -135,14 +127,13 @@ export default function Profile() {
           paddingBottom: 160,
         }}
       >
+        {/* HEADER */}
         <View
-          style={[
-            S.screenHeader,
-            {
-              justifyContent: "space-between",
-              marginBottom: Spacing.xl,
-            },
-          ]}
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: Spacing.xl,
+          }}
         >
           <View>
             <Text style={S.label}>My account</Text>
@@ -165,22 +156,14 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
 
+        {/* PROFILE CARD */}
         <View
           style={[
             S.cardElevated,
-            {
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: Spacing.lg,
-            },
+            { flexDirection: "row", alignItems: "center", marginBottom: Spacing.lg },
           ]}
         >
-          <View
-            style={{
-              position: "relative",
-              marginRight: Spacing.lg,
-            }}
-          >
+          <View style={{ marginRight: Spacing.lg }}>
             <View
               style={{
                 width: 78,
@@ -191,13 +174,7 @@ export default function Profile() {
                 justifyContent: "center",
               }}
             >
-              <Text
-                style={{
-                  color: "#fff",
-                  fontSize: 26,
-                  fontWeight: "900",
-                }}
-              >
+              <Text style={{ color: "#fff", fontSize: 26, fontWeight: "900" }}>
                 {initials}
               </Text>
             </View>
@@ -225,10 +202,8 @@ export default function Profile() {
 
             <View
               style={{
-                alignSelf: "flex-start",
                 flexDirection: "row",
                 alignItems: "center",
-                gap: 6,
                 marginTop: 12,
                 backgroundColor: Colors.accent + "18",
                 borderRadius: 999,
@@ -236,51 +211,31 @@ export default function Profile() {
                 paddingVertical: 6,
               }}
             >
-              <Star size={12} color={Colors.accent} fill={Colors.accent} />
-              <Text
-                style={{
-                  color: Colors.accent,
-                  fontWeight: "700",
-                  fontSize: Typography.xs,
-                }}
-              >
+              <Star size={12} color={Colors.accent} />
+              <Text style={{ color: Colors.accent, fontWeight: "700", marginLeft: 6 }}>
                 Gold member
               </Text>
             </View>
           </View>
         </View>
 
+        {/* BALANCE */}
         <View
           style={{
             backgroundColor: Colors.accent,
             borderRadius: Radius.xxl,
             padding: Spacing.xl,
             flexDirection: "row",
-            alignItems: "center",
             justifyContent: "space-between",
             marginBottom: Spacing.xl,
           }}
         >
           <View>
-            <Text
-              style={{
-                color: "#ffffff99",
-                fontSize: Typography.xs,
-                fontWeight: "700",
-                textTransform: "uppercase",
-              }}
-            >
+            <Text style={{ color: "#ffffff99", fontSize: 12, fontWeight: "700" }}>
               Available balance
             </Text>
 
-            <Text
-              style={{
-                color: "#fff",
-                fontSize: 30,
-                fontWeight: "900",
-                marginTop: 6,
-              }}
-            >
+            <Text style={{ color: "#fff", fontSize: 30, fontWeight: "900" }}>
               EUR {balance.toFixed(2)}
             </Text>
           </View>
@@ -288,57 +243,39 @@ export default function Profile() {
           <TouchableOpacity
             onPress={() => setTopupVisible(true)}
             style={{
-              flexDirection: "row",
-              alignItems: "center",
               backgroundColor: "#fff",
               borderRadius: Radius.lg,
               paddingHorizontal: 16,
               paddingVertical: 12,
-              gap: 8,
+              flexDirection: "row",
+              alignItems: "center",
             }}
           >
             <CreditCard size={16} color="#111" />
-            <Text style={{ color: "#111", fontWeight: "800" }}>
-              Top up
-            </Text>
+            <Text style={{ marginLeft: 8, fontWeight: "800" }}>Top up</Text>
           </TouchableOpacity>
         </View>
 
-        <View
-          style={{
-            flexDirection: "row",
-            gap: Spacing.sm,
-            marginBottom: Spacing.xl,
-          }}
-        >
+        {/* STATS */}
+        <View style={{ flexDirection: "row", gap: Spacing.sm, marginBottom: Spacing.xl }}>
           <StatCard icon={ShoppingBag} label="Purchases" value={String(orders.length)} />
           <StatCard icon={PackageCheck} label="Delivered" value={String(deliveredCount)} />
           <StatCard icon={Heart} label="Wishlist" value={String(wishlist.length)} />
         </View>
 
-        <View>
-          <Text style={[S.subheading, { marginBottom: Spacing.md }]}>
-            Account
-          </Text>
-
-          <MenuRow
-            icon={LogOut}
-            title="Sign out"
-            subtitle="Disconnect account"
-            danger
-            onPress={handleSignOut}
-          />
-        </View>
+        {/* MENU */}
+        <MenuRow
+          icon={LogOut}
+          title="Sign out"
+          subtitle="Disconnect account"
+          danger
+          onPress={handleSignOut}
+        />
       </ScrollView>
 
-
-      {/* NAVBAR */}
-      
-
       {/* TOPUP MODAL */}
-
       <Modal visible={topupVisible} transparent animationType="fade">
-        <View 
+        <View
           style={{
             flex: 1,
             backgroundColor: "rgba(0,0,0,0.5)",
@@ -353,14 +290,7 @@ export default function Profile() {
               padding: 20,
             }}
           >
-            <Text
-              style={{
-                color: Colors.textPrimary,
-                fontSize: 20,
-                fontWeight: "800",
-                marginBottom: 16,
-              }}
-            >
+            <Text style={{ fontSize: 20, fontWeight: "800", marginBottom: 16 }}>
               Top up balance
             </Text>
 
@@ -369,12 +299,10 @@ export default function Profile() {
               onChangeText={setTopupAmount}
               placeholder="Enter amount"
               keyboardType="numeric"
-              placeholderTextColor={Colors.textMuted}
               style={{
                 backgroundColor: Colors.input,
                 borderRadius: Radius.lg,
                 padding: 14,
-                color: Colors.textPrimary,
                 marginBottom: 20,
               }}
             />
@@ -386,21 +314,13 @@ export default function Profile() {
                 padding: 14,
                 borderRadius: Radius.lg,
                 alignItems: "center",
-                marginBottom: 10,
               }}
             >
-              <Text style={{ color: "#fff", fontWeight: "800" }}>
-                Add balance
-              </Text>
+              <Text style={{ color: "#fff", fontWeight: "800" }}>Add balance</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => setTopupVisible(false)}
-              style={{ alignItems: "center" }}
-            >
-              <Text style={{ color: Colors.textMuted }}>
-                Cancel
-              </Text>
+            <TouchableOpacity onPress={() => setTopupVisible(false)}>
+              <Text style={{ textAlign: "center", marginTop: 12 }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -409,103 +329,35 @@ export default function Profile() {
   )
 }
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ElementType
-  label: string
-  value: string
-}) {
+/* ---------- COMPONENTS ---------- */
+
+function StatCard({ icon: Icon, label, value }: any) {
   return (
-    <View
-      style={{
-        flex: 1,
-        minHeight: 100,
-        backgroundColor: Colors.card,
-        borderRadius: Radius.lg,
-        borderWidth: 1,
-        borderColor: Colors.border,
-        padding: Spacing.md,
-        justifyContent: "space-between",
-      }}
-    >
+    <View style={{ flex: 1, padding: 12, backgroundColor: Colors.card, borderRadius: 12 }}>
       <Icon size={20} color={Colors.accent} />
-      <Text style={{ color: Colors.textPrimary, fontSize: 22, fontWeight: "900" }}>
-        {value}
-      </Text>
-      <Text style={{ color: Colors.textDim, fontSize: Typography.xs, fontWeight: "700" }}>
-        {label}
-      </Text>
+      <Text style={{ fontSize: 22, fontWeight: "900" }}>{value}</Text>
+      <Text style={{ fontSize: 12 }}>{label}</Text>
     </View>
   )
 }
 
-function MenuRow({
-  icon: Icon,
-  title,
-  subtitle,
-  danger,
-  onPress,
-}: {
-  icon: React.ElementType
-  title: string
-  subtitle: string
-  danger?: boolean
-  onPress?: () => void
-}) {
+function MenuRow({ icon: Icon, title, subtitle, danger, onPress }: any) {
   return (
     <TouchableOpacity
       onPress={onPress}
       style={{
         flexDirection: "row",
         alignItems: "center",
+        padding: 14,
         backgroundColor: Colors.card,
-        borderRadius: Radius.lg,
-        borderWidth: 1,
-        borderColor: Colors.border,
-        padding: Spacing.md,
-        marginBottom: Spacing.sm,
+        borderRadius: 12,
       }}
     >
-      <View
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: Radius.md,
-          backgroundColor: danger ? Colors.danger + "15" : Colors.input,
-          alignItems: "center",
-          justifyContent: "center",
-          marginRight: Spacing.md,
-        }}
-      >
-        <Icon size={18} color={danger ? Colors.danger : Colors.accent} />
+      <Icon size={18} color={danger ? Colors.danger : Colors.accent} />
+      <View style={{ marginLeft: 12 }}>
+        <Text style={{ fontWeight: "700" }}>{title}</Text>
+        <Text style={{ fontSize: 12 }}>{subtitle}</Text>
       </View>
-
-      <View style={{ flex: 1 }}>
-        <Text
-          style={{
-            color: danger ? Colors.danger : Colors.textPrimary,
-            fontWeight: "700",
-            fontSize: Typography.base,
-          }}
-        >
-          {title}
-        </Text>
-
-        <Text
-          style={{
-            color: Colors.textDim,
-            fontSize: Typography.sm,
-            marginTop: 4,
-          }}
-        >
-          {subtitle}
-        </Text>
-      </View>
-
-      <Text style={{ color: Colors.textMuted, fontSize: 28 }}>›</Text>
     </TouchableOpacity>
   )
-} 
+}

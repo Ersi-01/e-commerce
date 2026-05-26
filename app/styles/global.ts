@@ -45,7 +45,7 @@ const DARK_COLORS = {
   bg:           "#0f172a",
   bgAlt:        "#1e293b",
   card:         "#1e293b",
-  input:        "#334155",
+  input:        "rgb(51, 65, 85)",
   border:       "#475569",
   borderLight:  "#64748b",
 

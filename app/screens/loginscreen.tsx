@@ -11,11 +11,12 @@ import {
   ScrollView,
   ActivityIndicator,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '../utils/supabase';
 import { Colors, Spacing, Radius, Typography } from '@/app/styles/global';
 import S from '@/app/styles/global';
+import storage from '@/app/utils/storage';
 
 type LoginErrors = {
   email?: string | null;
@@ -57,12 +58,12 @@ export default function LoginScreen() {
 
   const checkExistingUser = async () => {
     try {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
+      const savedEmail = await storage.get("@user_email");
+      if (savedEmail) {
         router.replace('/(tabs)' as any);
       }
     } catch (e) {
-      console.log('Storage error', e);
+      console.log("Storage error", e);
     }
   };
 
@@ -76,39 +77,15 @@ export default function LoginScreen() {
     ]).start();
   };
 
-  const sanitize = (value: string) => {
-    return value
-      .replace(/[<>'"`;\\]/g, '')
-      .trim();
-  };
+  const sanitize = (value: string) =>
+    value.replace(/[<>'"`;\\]/g, '').trim();
 
   const validate = () => {
     const newErrors: LoginErrors = {};
 
-    const cleanEmail = sanitize(email);
-    const cleanPassword = sanitize(password);
-
-    if (cleanEmail !== email.trim() || cleanPassword !== password.trim()) {
-      newErrors.email = 'Invalid characters detected';
-      setErrors(newErrors);
-      return false;
-    }
-
-    if (email.length > 100) {
-      newErrors.email = 'Email is too long';
-    } else if (!email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Enter a valid email';
-    }
-
-    if (password.length > 64) {
-      newErrors.password = 'Password is too long';
-    } else if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
+    if (!email.trim()) newErrors.email = 'Email is required';
+    if (!password) newErrors.password = 'Password is required';
+    if (password.length < 6) newErrors.password = 'Min 6 characters';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -121,23 +98,33 @@ export default function LoginScreen() {
     }
 
     setLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
 
-      if (error) {
-        setErrors({ email: error.message });
+    try {
+      const savedEmail = await storage.get("@user_email");
+      const savedName = await storage.get("@user_name");
+
+      if (!savedEmail) {
+        setErrors({ email: "No account found. Please register first." });
         triggerShake();
+        setLoading(false);
         return;
       }
 
-      await new Promise(res => setTimeout(res, 1500));
+      // simple check (demo only)
+      if (savedEmail !== email.trim()) {
+        setErrors({ email: "Email not found" });
+        triggerShake();
+        setLoading(false);
+        return;
+      }
+
+      // login success (local)
+      await new Promise(res => setTimeout(res, 600));
+
       router.replace('/(tabs)' as any);
 
     } catch (e) {
-      console.log('Login error', e);
+      console.log("Login error", e);
     } finally {
       setLoading(false);
     }
@@ -150,10 +137,8 @@ export default function LoginScreen() {
     >
       <StatusBar barStyle="light-content" backgroundColor={Colors.bg} />
 
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
-      >
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+
         <View style={S.blobTop} />
         <View style={S.blobBottom} />
 
@@ -175,87 +160,43 @@ export default function LoginScreen() {
           </View>
 
           <View style={S.cardElevated}>
-            <View style={styles.fieldGroup}>
-              <Text style={S.label}>Email</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  errors.email ? S.inputError : null,
-                  { outlineStyle: 'none' } as any,
-                ]}
-                placeholder="you@example.com"
-                placeholderTextColor={Colors.textMuted}
-                value={email}
-                onChangeText={t => {
-                  setEmail(t);
-                  setErrors(e => ({ ...e, email: null }));
-                }}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="next"
-                maxLength={100}
-                onSubmitEditing={() => passwordRef.current?.focus()}
-              />
-              {errors.email && (
-                <Text style={S.fieldError}>{errors.email}</Text>
-              )}
-            </View>
 
-            <View style={styles.fieldGroup}>
-              <Text style={S.label}>Password</Text>
-              <View style={[S.inputWrapper, errors.password ? S.inputError : null]}>
-                <TextInput
-                  ref={passwordRef}
-                  style={[S.inputText, { outlineStyle: 'none' } as any]}
-                  placeholder="Min. 6 characters"
-                  placeholderTextColor={Colors.textMuted}
-                  value={password}
-                  onChangeText={t => {
-                    setPassword(t);
-                    setErrors(e => ({ ...e, password: null }));
-                  }}
-                  secureTextEntry={!showPassword}
-                  returnKeyType="done"
-                  maxLength={64}
-                  onSubmitEditing={handleLogin}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(v => !v)}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <Text style={styles.showHideText}>
-                    {showPassword ? 'HIDE' : 'SHOW'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              {errors.password && (
-                <Text style={S.fieldError}>{errors.password}</Text>
-              )}
-            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <TextInput
+              ref={passwordRef}
+              style={styles.input}
+              placeholder="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+            />
 
             <TouchableOpacity
-              style={[S.btnPrimary, loading && S.btnDisabled]}
+              style={S.btnPrimary}
               onPress={handleLogin}
               disabled={loading}
-              activeOpacity={0.85}
             >
               {loading ? (
-                <ActivityIndicator color={Colors.accentDark} />
+                <ActivityIndicator color="#000" />
               ) : (
                 <Text style={S.btnPrimaryText}>Sign In</Text>
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.signupRow}
-              onPress={() => router.push('/register' as any)}
-            >
+            <TouchableOpacity onPress={() => router.push('/register' as any)}>
               <Text style={S.caption}>
-                Don't have an account?{' '}
-                <Text style={styles.signupLink}>Create one</Text>
+                Don't have an account? Create one
               </Text>
             </TouchableOpacity>
+
           </View>
         </Animated.View>
       </ScrollView>
@@ -267,46 +208,24 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingVertical: Spacing.xl * 2,
+    paddingVertical: 40,
   },
   container: {
-    paddingHorizontal: Spacing.xxl,
+    paddingHorizontal: 24,
   },
   header: {
-    marginBottom: Spacing.xxxl,
+    marginBottom: 30,
   },
   brandName: {
-    fontSize: Typography.h1,
-    fontWeight: Typography.extrabold,
+    fontSize: 32,
+    fontWeight: '800',
     color: Colors.textPrimary,
-    letterSpacing: -1,
-    marginBottom: Spacing.xs,
-  },
-  fieldGroup: {
-    marginBottom: Spacing.lg,
   },
   input: {
     backgroundColor: Colors.input,
     borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: Spacing.md,
-    height: 52,
+    padding: 14,
+    marginBottom: 12,
     color: Colors.textPrimary,
-    fontSize: Typography.md,
-  },
-  showHideText: {
-    color: Colors.accent,
-    fontSize: Typography.xs,
-    fontWeight: Typography.bold,
-    letterSpacing: 0.8,
-  },
-  signupRow: {
-    alignItems: 'center',
-    marginTop: Spacing.xl,
-  },
-  signupLink: {
-    color: Colors.accent,
-    fontWeight: Typography.bold,
   },
 });

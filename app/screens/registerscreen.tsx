@@ -12,10 +12,10 @@ import {
   ActivityIndicator,
   StatusBar,
 } from 'react-native';
-import { supabase } from '../utils/supabase';
 import { useRouter } from 'expo-router';
 import { Colors, Spacing, Radius, Typography } from '@/app/styles/global';
 import S from '@/app/styles/global';
+import storage from '@/app/utils/storage';
 
 type RegisterErrors = {
   name?: string | null;
@@ -26,10 +26,12 @@ type RegisterErrors = {
 
 export default function RegisterScreen() {
   const router = useRouter();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -45,8 +47,17 @@ export default function RegisterScreen() {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
-      Animated.spring(slideAnim, { toValue: 0, tension: 60, friction: 10, useNativeDriver: true }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 60,
+        friction: 10,
+        useNativeDriver: true,
+      }),
     ]).start();
   }, []);
 
@@ -60,56 +71,16 @@ export default function RegisterScreen() {
     ]).start();
   };
 
-  const sanitize = (value: string) => {
-    return value
-      .replace(/[<>'"`;\\]/g, '')
-      .trim();
-  };
+  const sanitize = (value: string) =>
+    value.replace(/[<>'"`;\\]/g, '').trim();
 
   const validate = () => {
     const newErrors: RegisterErrors = {};
 
-    const cleanName = sanitize(name);
-    const cleanEmail = sanitize(email);
-    const cleanPassword = sanitize(password);
-
-    if (
-      cleanName !== name.trim() ||
-      cleanEmail !== email.trim() ||
-      cleanPassword !== password.trim()
-    ) {
-      newErrors.email = 'Invalid characters detected';
-      setErrors(newErrors);
-      return false;
-    }
-
-    if (!name.trim()) {
-      newErrors.name = 'Name is required';
-    } else if (name.length > 50) {
-      newErrors.name = 'Name is too long';
-    }
-
-    if (!email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (email.length > 100) {
-      newErrors.email = 'Email is too long';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Enter a valid email';
-    }
-
-    if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    } else if (password.length > 64) {
-      newErrors.password = 'Password is too long';
-    }
-
-    if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
+    if (!name.trim()) newErrors.name = 'Name is required';
+    if (!email.includes('@')) newErrors.email = 'Invalid email';
+    if (password.length < 6) newErrors.password = 'Min 6 characters';
+    if (password !== confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -122,26 +93,24 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
+
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          data: { name: name.trim() }
-        }
-      });
+      const cleanName = sanitize(name);
+      const cleanEmail = sanitize(email);
 
-      if (error) {
-        setErrors({ email: error.message });
-        triggerShake();
-        return;
-      }
+      // 👉 LOCAL "REGISTER"
+      await storage.set("@user_name", cleanName);
+      await storage.set("@user_email", cleanEmail);
 
-      await new Promise(res => setTimeout(res, 1500));
+      // optional (demo only)
+      await storage.set("@user_balance", "0");
+      await storage.set("@user_orders", JSON.stringify([]));
+
+      await new Promise(res => setTimeout(res, 800));
+
       router.replace('/(tabs)' as any);
-
     } catch (e) {
-      console.log('Register error', e);
+      console.log("Register error:", e);
     } finally {
       setLoading(false);
     }
@@ -153,6 +122,7 @@ export default function RegisterScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <StatusBar barStyle="light-content" backgroundColor={Colors.bg} />
+
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
 
         <View style={S.blobTop} />
@@ -174,111 +144,54 @@ export default function RegisterScreen() {
 
           <View style={S.cardElevated}>
 
-            <View style={styles.fieldGroup}>
-              <Text style={S.label}>Full Name</Text>
-              <TextInput
-                style={[styles.input, errors.name ? S.inputError : null, { outlineStyle: 'none' } as any]}
-                placeholder="John Doe"
-                placeholderTextColor={Colors.textMuted}
-                value={name}
-                onChangeText={t => { setName(t); setErrors(e => ({ ...e, name: null })); }}
-                autoCapitalize="words"
-                autoCorrect={false}
-                returnKeyType="next"
-                maxLength={50}
-                onSubmitEditing={() => emailRef.current?.focus()}
-              />
-              {errors.name && <Text style={S.fieldError}>{errors.name}</Text>}
-            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Full Name"
+              value={name}
+              onChangeText={setName}
+            />
 
-            <View style={styles.fieldGroup}>
-              <Text style={S.label}>Email</Text>
-              <TextInput
-                ref={emailRef}
-                style={[styles.input, errors.email ? S.inputError : null, { outlineStyle: 'none' } as any]}
-                placeholder="you@example.com"
-                placeholderTextColor={Colors.textMuted}
-                value={email}
-                onChangeText={t => { setEmail(t); setErrors(e => ({ ...e, email: null })); }}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="next"
-                maxLength={100}
-                onSubmitEditing={() => passwordRef.current?.focus()}
-              />
-              {errors.email && <Text style={S.fieldError}>{errors.email}</Text>}
-            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              ref={emailRef}
+            />
 
-            <View style={styles.fieldGroup}>
-              <Text style={S.label}>Password</Text>
-              <View style={[S.inputWrapper, errors.password ? S.inputError : null]}>
-                <TextInput
-                  ref={passwordRef}
-                  style={[S.inputText, { outlineStyle: 'none' } as any]}
-                  placeholder="Min. 6 characters"
-                  placeholderTextColor={Colors.textMuted}
-                  value={password}
-                  onChangeText={t => { setPassword(t); setErrors(e => ({ ...e, password: null })); }}
-                  secureTextEntry={!showPassword}
-                  returnKeyType="next"
-                  maxLength={64}
-                  onSubmitEditing={() => confirmRef.current?.focus()}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(v => !v)}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <Text style={styles.showHideText}>{showPassword ? 'HIDE' : 'SHOW'}</Text>
-                </TouchableOpacity>
-              </View>
-              {errors.password && <Text style={S.fieldError}>{errors.password}</Text>}
-            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              ref={passwordRef}
+            />
 
-            <View style={styles.fieldGroup}>
-              <Text style={S.label}>Confirm Password</Text>
-              <View style={[S.inputWrapper, errors.confirmPassword ? S.inputError : null]}>
-                <TextInput
-                  ref={confirmRef}
-                  style={[S.inputText, { outlineStyle: 'none' } as any]}
-                  placeholder="Repeat your password"
-                  placeholderTextColor={Colors.textMuted}
-                  value={confirmPassword}
-                  onChangeText={t => { setConfirmPassword(t); setErrors(e => ({ ...e, confirmPassword: null })); }}
-                  secureTextEntry={!showConfirm}
-                  returnKeyType="done"
-                  maxLength={64}
-                  onSubmitEditing={handleRegister}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowConfirm(v => !v)}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <Text style={styles.showHideText}>{showConfirm ? 'HIDE' : 'SHOW'}</Text>
-                </TouchableOpacity>
-              </View>
-              {errors.confirmPassword && <Text style={S.fieldError}>{errors.confirmPassword}</Text>}
-            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm Password"
+              secureTextEntry={!showConfirm}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              ref={confirmRef}
+            />
 
             <TouchableOpacity
-              style={[S.btnPrimary, loading && S.btnDisabled]}
+              style={S.btnPrimary}
               onPress={handleRegister}
               disabled={loading}
-              activeOpacity={0.85}
             >
-              {loading
-                ? <ActivityIndicator color={Colors.accentDark} />
-                : <Text style={S.btnPrimaryText}>Create Account</Text>
-              }
+              {loading ? (
+                <ActivityIndicator color="#000" />
+              ) : (
+                <Text style={S.btnPrimaryText}>Create Account</Text>
+              )}
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.loginRow}
-              onPress={() => router.push('/login' as any)}
-            >
+            <TouchableOpacity onPress={() => router.push('/login' as any)}>
               <Text style={S.caption}>
-                Already have an account?{' '}
-                <Text style={styles.loginLink}>Sign in</Text>
+                Already have an account? Sign in
               </Text>
             </TouchableOpacity>
 
@@ -293,46 +206,24 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingVertical: Spacing.xl * 2,
+    paddingVertical: 40,
   },
   container: {
-    paddingHorizontal: Spacing.xxl,
+    paddingHorizontal: 24,
   },
   header: {
-    marginBottom: Spacing.xxxl,
+    marginBottom: 30,
   },
   brandName: {
-    fontSize: Typography.h1,
-    fontWeight: Typography.extrabold,
+    fontSize: 32,
+    fontWeight: '800',
     color: Colors.textPrimary,
-    letterSpacing: -1,
-    marginBottom: Spacing.xs,
-  },
-  fieldGroup: {
-    marginBottom: Spacing.lg,
   },
   input: {
     backgroundColor: Colors.input,
     borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: Spacing.md,
-    height: 52,
+    padding: 14,
+    marginBottom: 12,
     color: Colors.textPrimary,
-    fontSize: Typography.md,
-  },
-  showHideText: {
-    color: Colors.accent,
-    fontSize: Typography.xs,
-    fontWeight: Typography.bold,
-    letterSpacing: 0.8,
-  },
-  loginRow: {
-    alignItems: 'center',
-    marginTop: Spacing.xl,
-  },
-  loginLink: {
-    color: Colors.accent,
-    fontWeight: Typography.bold,
   },
 });
