@@ -1,50 +1,43 @@
-# Welcome to your Expo app 👋
+# E-Commerce Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile **E-Commerce** application developed as a group project during our third year of school.
 
-## Get started
+The application allows users to browse products, manage their cart, and make online payments through **PayPal**.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## Features
 
-2. Start the app
+* Displaying products
+* Product catalog
+* Searching and filtering products
+* Adding and removing products from the cart
+* Wishlist
+* Managing product quantities
+* Checkout process
+* Payments through PayPal
+* User account management
+* User authentication and login
+* Viewing orders
 
-   ```bash
-   npx expo start
-   ```
 
-In the output, you'll find options to open the app in a
+## Technologies
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+* **React Native**
+* **Expo**
+* **TypeScript**
+* **PayPal API**
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 👥 Group Project
 
-## Get a fresh project
+This application was developed as a **group school project** during our third year.
 
-When you're ready, run:
+The project aimed to apply the knowledge we gained during our studies, particularly in mobile application development, data management, and the integration of a real payment system.
 
-```bash
-npm run reset-project
-```
+## Project Purpose
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+The purpose of this project was to create a functional E-Commerce application using **React Native**, while gaining practical experience in teamwork, application structure, and integrating **PayPal** for online payments.
 
-## Learn more
+## 👨‍💻 Authors
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Developed as a group project during our 3rd year of middle school.
